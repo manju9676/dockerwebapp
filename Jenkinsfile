@@ -13,14 +13,20 @@ pipeline {
         stage('Build'){
             steps{
                 sh 'mvn clean package'
+                sh 'ls'
             }
         }
         stage('Docker'){
             steps{
             sh 'docker build -t dockerdb ./Docker-db'
-            sh 'docker run -d --name dockerdb -p 3306:3306 dockerdb'
-            sh 'docker build -t webapp ./Docker-app'
-            sh 'docker run -d --name app -p 8082:8080 --link dockerdb webapp'
+            sh 'docker build -t webapp -f Docker-app/Dockerfile .'
+            }
+        }
+        stage('Deploy'){
+            steps{
+                sh 'docker run -d --name devopsdb -p 3306:3306 dockerdb'
+                sh 'docker run -d --name appcont -p 8082:8080 --link devopsdb:mysqlcon webapp'
+
             }
         }
         
